@@ -1,0 +1,20 @@
+// layout
+
+%container {
+  @include container-base;
+}
+
+.container {
+  @extend %container;
+}
+
+.container-fluid {
+  @include fluid-container(3);
+  place-items: center;
+}
+
+@each $cell-size, $value in $cell-size {
+  .cell-#{$cell-size} {
+    grid-column: span $value;
+  }
+}

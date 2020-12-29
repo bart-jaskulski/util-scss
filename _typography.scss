@@ -1,0 +1,45 @@
+// typography
+
+@if $type-scale {
+  $a: $base-font-size;
+  $b: $font-size-ratio;
+
+  @for $i from 5 to 0 {
+    $a: $a * $b;
+    h#{$i}, .h#{$i} {
+      font-size: to-rem($a);
+    }
+  }
+} @else {
+  @each $selector, $size in $headers-size {
+    #{$selector}, .#{$selector} {
+      font-size: #{$size};
+    }
+  }
+}
+
+h1, h2, h3, h4, h5, h6,
+.h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: $secondary-font-stack;
+  @include apply(text-primary, font-300);
+}
+
+// b, strong,
+// blockquote,
+// cite,
+// code, kbd, var
+// pre
+// em, i
+// label
+// small,
+// time
+// ul, ol, li
+// del, ins
+
+a {
+  @include apply(text-black);
+  text-decoration: none;
+  &:hover, &:focus, &:visited {
+    color: darken($primary, 15%);
+  }
+}

@@ -1,0 +1,66 @@
+// colors
+
+$primary: #EF7814 !default;
+$secondary: #E6007E !default;
+$black: #404040 !default;
+$white: #FFFFFF !default;
+
+
+$gradient: linear-gradient($primary, $secondary);
+
+$colors: (
+  'primary'  : $primary,
+  'secondary': $secondary,
+  'black'    : $black,
+  'white'    : $white,
+);
+
+$useRem: true;
+
+// scale
+
+$xs-viewport-width: 320px;
+$md-viewport-width: 1000px;
+$lg-viewport-width: 1200px;
+
+// $xs-root-scale: 1;
+// $md-root-scale: 1.1;
+// $lg-root-scale: 1.2;
+
+// font stack
+
+$font-stack: Montserrat, serif !default;
+$secondary-font-stack: Raleway, Helvetica, Arial, sans-serif !default;
+
+// font size
+
+$base-font-size: 16px !default;
+$font-size-ratio: 1.25 !default;
+$line-height: calc(2px + 2ex + 2px) !default;
+
+$type-scale: true;
+
+$headers-size: (
+  h1: rem(56),
+  h2: rem(48),
+  h3: rem(40),
+  h4: rem(32),
+  h5: rem(24),
+);
+
+// container
+
+$content-width: 1200px !default;
+$column-count: 12 !default;
+$column-width: $content-width / $column-count;
+
+
+$shadow: 0 0 10px black;
+
+$enable-rounded-edges: true;
+
+$border-radius: 16px;
+
+$button-selector: ('.btn', 'a.btn', 'button', '[type=submit]', '[type=reset]', '[type=button]') !default;
+
+$viewport-sizes: ( sm, md, lg );

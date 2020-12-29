@@ -1,0 +1,26 @@
+$_custom-utilities: (
+  padding: p,
+  padding-bottom: pb,
+  padding-left: pl,
+  padding-right: pr,
+  padding-top: pt,
+  // padding: (p, px, py),
+  margin: (m, mx, my, mt, mr, mb, ml),
+  width: w,
+  height: h,
+  text-color: color,
+  background-color: bg,
+  border-radius: rounded
+);
+
+@mixin apply-custom($map) {
+  @if (type-of($map) != 'map') {
+    @error "Give me a map, dumb!";
+  }
+  @else {
+    @each $key, $value in $map {
+      $key: map-search-key($key, $_custom-utilities);
+      #{$key}: #{$value};
+    }
+  }
+}

@@ -1,0 +1,193 @@
+@import 'functions';
+
+// Mixins
+
+@mixin set-var($var, $prop) {
+  --#{$var}: #{$prop};
+}
+
+@mixin apply($args...) {
+  $applyUtils: ();
+  @each $arg in $args {
+    @if ( type-of($arg) == 'map' ) {
+      @include apply-custom($arg);
+    } @else {
+      $tempArg: map.get($utilities, $arg);
+      $applyUtils: map.merge($applyUtils, $tempArg);
+    }
+  }
+  @each $prop, $value in $applyUtils {
+    #{$prop}: #{$value};
+  }
+}
+
+// Poor alternative
+// @mixin apply($args...) {
+//   @each $arg in $args {
+//     @extend .#{$arg} !optional;
+//   }
+// }
+
+@mixin bind($selector, $args...) {
+  #{$selector} {
+    @include apply($args...);
+    @content;
+  }
+}
+
+@mixin xs-breakpoint() {
+  @media (min-width: #{rem($xs-viewport-width)}) {
+    @content;
+  }
+}
+
+@mixin md-breakpoint() {
+  @media (min-width: #{rem($md-viewport-width)}) {
+    @content;
+  }
+}
+
+@mixin lg-breakpoint() {
+  @media (min-width: #{rem($lg-viewport-width)}) {
+    @content;
+  }
+}
+
+@mixin container-base() {
+  display: grid;
+  width: 100%;
+  max-width: var(--contentWidth, rem($content-width));
+  margin: auto;
+}
+
+@mixin fluid-container($column-count: 2) {
+  $column-width: rem($content-width / $column-count);
+  grid-template-columns: repeat(auto-fit, minmax($column-width, 1fr) );
+  @extend %container;
+}
+
+// @type: color, gradient, image
+
+// @mixin background($type: color, $source: $white) {
+//   @if $type == color
+//   {
+//     background-color: $source;
+//   }
+//
+//   @else if $type == gradient {
+//     background-image: $source;
+//   }
+//
+//   @else if ($type == image)
+//   {
+//     background-image: url('#{$source}');
+//     background-position: center;
+//     background-size: cover;
+//     background-repeat: no-repeat;
+//   }
+// }
+
+@mixin setup-utils() {
+  $_isUsed: true !global;
+  @each $key, $utils in $_atomUtilities {
+    @each $style, $value in $utils {
+      .#{$key} {
+        #{$style}: #{$value};
+      }
+    }
+  }
+}
+
+@mixin setup-root() {
+  :root {
+    @each $root, $prop in $rootVars {
+      @include set-var($root, $prop);
+    }
+  }
+}
+
+$_isUsed: false;
+
+@mixin is-used($util) {
+  @if (not $_isUsed) {
+    @at-root {
+      .#{$util} {
+        @include apply(#{$util});
+      }
+    }
+  }
+  @extend .#{$util};
+  $_isUsed: true !global;
+}
+
+@mixin setup() {
+  @include setup-root;
+  @if ($useUtils) {
+    @include setup-utils;
+  }
+}
+
+@function parent($child) {
+  @return '.parent';
+}
+
+@mixin bem($selector) {
+  $parents: nth(&, 1);
+  $parent: nth($parents, length($parents));
+  $type: element;
+  @if (nth-letters($selector, 2) == "--") {
+    $type: modifier;
+  }
+  @at-root #{$parent}#{$selector} {
+    @if ($type == modifier) {
+      @extend #{$parent};
+    }
+    @content;
+  }
+}
+
+@mixin el($el) {
+  @include bem(__#{$el}) {
+    @content;
+  };
+}
+
+@mixin mod($mod) {
+  @include bem('--#{$mod}') {
+    @content;
+  };
+}
+
+@mixin auto-flex($columns: auto, $margin: 1rem) {
+  @if not ($columns == 'auto') {
+    $columns: calc(#{get-var(contentWidth) / $columns} - #{$margin * 2})
+  }
+  @include apply(flex);
+  flex-wrap: wrap;
+  gap: $margin;
+  > * {
+    flex: 1 0 #{$columns};
+  }
+}
+
+@mixin auto-grid($columns: 320px, $margin: 1rem) {
+  @if not ($columns == '320px') {
+    $guard: min(50vw, 3rem);
+    $columns:
+      max(
+        calc(
+          #{get-var(contentWidth)} / #{$columns} - #{$margin} - #{$guard}
+        ),
+        360px - #{$margin}
+      )
+  }
+  @include apply(grid, place-items-center);
+  grid-template-columns: repeat(auto-fit, minmax( #{$columns}, 1fr));
+  gap: $margin;
+}
+
+@mixin owl-selector() {
+  & + & {
+    @content;
+  }
+}

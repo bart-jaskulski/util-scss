@@ -1,0 +1,183 @@
+/// String functions
+
+/// Function for getting the first n letters of string.
+/// @param {string} $string
+/// @param {number} $n [1]
+/// @return {string}
+@function nth-letters($string, $n: 1) {
+  @return string.slice($string, 1, $n);
+}
+
+@function str-ends-with($string, $find) {
+  @return str-slice($string, (str-length($string) - str-length($find) + 1)) == $find;
+}
+
+@function str-starts-with($string, $find) {
+  @return str-slice($string, 1, str-length($find)) == $find;
+}
+
+@function str-split($string, $separator) {
+    // empty array/list
+    $split-arr: ();
+    // first index of separator in string
+    $index : str-index($string, $separator);
+    // loop through string
+    @while $index != null {
+        // get the substring from the first character to the separator
+        $item: str-slice($string, 1, $index - 1);
+        // push item to array
+        $split-arr: append($split-arr, $item);
+        // remove item and separator from string
+        $string: str-slice($string, $index + 1);
+        // find new index of separator
+        $index : str-index($string, $separator);
+    }
+    // add the remaining string to list (the last item)
+    $split-arr: append($split-arr, $string);
+
+    @return $split-arr;
+}
+
+@function str-concat($strings...) {
+  $new-string: "";
+  @each $string in $strings {
+    $new-string: $new-string + $string;
+  }
+  @return $new-string;
+}
+
+@function str-join($list-of-strings, $separator: ", ") {
+  $string: '';
+  @each $item in $list-of-strings {
+    $string: $string + str-concat($item, $separator);
+  }
+  @return $string;
+}
+
+@function str-extend($base, $extension) {
+  $list: ();
+  @each $extender in $extension {
+    $list: append($list, #{$base}-#{$extender})
+  }
+  @return $list;
+}
+
+@function get-var($var) {
+  @return var(--#{$var});
+}
+
+@function importance($value) {
+  @return $value !important;
+}
+
+@function value($val) {
+  @if (type-of($val) == string or unit($val) == "%") {
+    @return $val;
+  } @else {
+    @return rem($val);
+  }
+}
+
+$base-font-size: 18px;
+
+@function convert($value, $unit, $context: $base-font-size) {
+  @if unitless($value) {
+    $value: $value * 1px;
+  }
+  @if $unit == px {
+    @return $value * $context;
+  }
+  @else if $unit == rem {
+    @return $value / $context * 1rem;
+  }
+  @else if $unit == em {
+    @return $value / $context * 1em;
+  }
+}
+
+@function to-px($value) {
+  @return convert($value, px);
+}
+
+@function to-em($value, $context: $base-font-size) {
+  @return convert($value, em, $context);
+}
+
+@function to-rem($value) {
+  @return convert($value, rem);
+}
+
+@function rem($pixels, $context: 18) {
+  @if (unitless($pixels)) {
+    $pixels: $pixels * 1px;
+  }
+  @if (unitless($context)) {
+    $context: $context * 1px;
+  }
+
+    @return $pixels / $context * 1rem;
+}
+
+@function set-utility($name, $prop, $value, $map: $utilities) {
+  @each $item in $prop {
+    $map: map.set($map, $name, $item, $value);
+  }
+  @return $map;
+}
+
+/// Map deep get
+/// @author Hugo Giraudel
+/// @access public
+/// @param {Map} $map - Map
+/// @param {Arglist} $keys - Key chain
+/// @return {*} - Desired value
+@function map-deep-get($map, $keys...) {
+    @each $key in $keys {
+        $map: map-get($map, $key);
+    }
+    @return $map;
+}
+
+@function map-search-key($needle, $haystack) {
+  $index: null;
+  @each $key, $item in $haystack {
+    $index: list.index($item, $needle);
+    @if $index != null {
+      @return $key;
+    }
+  }
+  @return $index;
+}
+
+@function map-get-key($map, $key) {
+  @each $k, $item in $map {
+    @if ( type-of($item) == 'map' ) {
+      @if (map.has-key($item, $key)) {
+        @return $k;
+      }
+    }
+    $index: list.index($item, $key);
+    @if ($index) {
+      @return $k;
+    }
+  }
+  @return null;
+}
+
+@function extend($list, $map) {
+  $join: ();
+  @each $item in $list {
+    $join: map.set($join, $item, $map);
+  }
+  @return $join;
+}
+
+@function list-remove($list, $item-to-remove) {
+  $clean-list: ();
+  @each $item in $list {
+    @if ($item != $item-to-remove) {
+      $clean-list: append($clean-list, $item);
+    }
+  }
+  @return $clean-list;
+}

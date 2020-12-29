@@ -1,0 +1,315 @@
+@use 'sass:math';
+@use 'sass:map';
+@use 'sass:string';
+@use 'sass:list';
+
+$_atomUtilities: ();
+$_moleculeUtilities: ();
+$_compoundUtilities: ();
+$_organismUtilities: ();
+
+$space-values: (auto, 0, 1, 2, 4, 8, 12, 16, 24, 32, 56, 64, 128, 256);
+$percent-values: (10%, 33%, 25%, 50%, 66%, 75%, 100%);
+
+$text-positions: (left, center, right);
+$box-positions: (top, bottom, left, right);
+$placement-common-positions: (center, start, end, flex-start, flex-end);
+$placement-positions: (
+  items: $placement-common-positions,
+  content: (join($placement-common-positions, (space-between, space-around, space-evenly, stretch))),
+  self: (join($placement-common-positions, (self-start, self-end)))
+);
+
+$_utilities: (
+  numerical: (padding, margin, border),
+  // add row-gap, column-gap
+  size: (width, height, max-width, min-width, max-height, min-height),
+  display: (block, inline-block, inline, flex, inline-flex, grid, hidden),
+  position: (static, relative, absolute, fixed, sticky),
+  object: (
+    fit: (contain, cover, fill, none, scale-down),
+    position: (bottom, center, top, left, right)
+  ),
+  placement: extend((align, justify, place), $placement-positions),
+  text: (
+    align: (left, center, right, justify),
+    transform: (lowercase, uppercase, capitalize),
+    decoration-line: (underline, line-through, overline, blink),
+    overflow: (clip, ellipsis, fade)
+  ),
+  font: (
+    style: (normal, italic, oblique),
+    weight: (100, 200, 300, 400, 500, 600, 700, 800, 900),
+  ),
+  color: (background, text, border),
+  visibility: (visible, hidden)
+  // border: (
+  //   width,
+  //   style: (),
+  //   color
+  // )
+);
+
+@mixin _setup-numbers {
+  $values: map-get($_utilities, numerical);
+  @each $prop in $values {
+    @each $position in $box-positions { // Global controlled positions
+      @each $space in $space-values {   // And the spacing in pixels
+          $_name: #{nth-letters($prop)}#{nth-letters($position)}-#{$space};
+          $_property: #{$prop}-#{$position};
+          $_value: value($space);
+
+          @if ($prop == 'border') {
+            $_name: #{$prop}-#{nth-letters($position)}-#{$space};
+          }
+
+          $_atomUtilities:
+          set-utility(
+            $_name,
+            $_property,
+            $_value,
+            $_atomUtilities
+          ) !global
+      }
+    }
+  }
+}
+
+@mixin _setup-size {
+  $values: map-get($_utilities, size);
+  $sizes: join($space-values, $percent-values);
+
+  @each $prop in $values {
+    @each $size in $sizes {
+      $_name: #{nth-letters($prop)}-#{$size};
+      $_property: $prop;
+      $_value: value($size);
+
+      @if (str-starts-with($prop, 'm')) {
+        $_name: #{nth-letters($prop, 5)}-#{$size};
+      }
+
+      $_atomUtilities:
+      set-utility(
+        $_name,
+        $_property,
+        $_value,
+        $_atomUtilities
+      ) !global
+    }
+  }
+}
+
+@mixin _setup-general($keyword) {
+  $values: map-get($_utilities, $keyword);
+
+  @each $prop in $values {
+    $_atomUtilities:
+      set-utility(
+        $prop,
+        $keyword,
+        $prop,
+        $_atomUtilities
+      ) !global
+  }
+}
+
+@mixin _setup-nested($keywords...) {
+  $keys: ();
+  @each $keyword in $keywords {
+    $keyword: str-split($keyword, '-');
+    $keys: append($keys, nth($keyword, 1));
+  }
+
+  $values: map-deep-get($_utilities, $keys...);
+
+  @each $prop in $values {
+    $_atomUtilities:
+      set-utility(
+        #{nth($keys, 1)}-#{$prop},
+        #{nth($keys, 1)}-#{nth($keys, 2)},
+        $prop,
+        $_atomUtilities
+      ) !global
+  }
+}
+
+@mixin _setup-display {
+  @include _setup-general(display);
+}
+
+@mixin _setup-position {
+  @include _setup-general(position);
+}
+
+@mixin _setup-visibility {
+  @include _setup-general(visibility);
+}
+
+@mixin _setup-text {
+  $values: map-get($_utilities, text);
+  @each $parent, $childs in $values {
+    @each $child in $childs {
+      @include _setup-nested(text, #{$parent}-#{$child});
+    }
+  }
+}
+
+@mixin _setup-font {
+  $values: map-get($_utilities, font);
+  @each $parent, $childs in $values {
+    @each $child in $childs {
+      @include _setup-nested(font, #{$parent}-#{$child});
+    }
+  }
+}
+
+@mixin _setup-object {
+  $values: map-get($_utilities, object);
+  @each $parent, $childs in $values {
+    @each $child in $childs {
+      @include _setup-nested(object, #{$parent}-#{$child});
+    }
+  }
+}
+
+@mixin _setup-color {
+  $values: map-get($_utilities, color);
+
+  @each $prop in $values {
+    @each $id, $color in $colors {
+      $_property: #{$prop}-color;
+      $_name: #{$prop}-#{$id};
+      $_value: get-var($id);
+
+      @if ($prop == 'text') {
+        $_property: color;
+      }
+
+      $_atomUtilities:
+      set-utility(
+        $_name,
+        $_property,
+        $_value,
+        $_atomUtilities
+      ) !global
+    }
+  }
+}
+
+@mixin _setup-placement {
+  $values: map-get($_utilities, placement);
+  @each $parent, $childs in $values {
+    @each $group, $positions in $childs {
+      @each $position in $positions {
+        $_name: #{$parent}-#{$group}-#{$position};
+        $_property: #{$parent}-#{$group};
+        $_value: #{$position};
+
+        $_atomUtilities:
+        set-utility(
+          $_name,
+          $_property,
+          $_value,
+          $_atomUtilities
+        ) !global
+      }
+    }
+  }
+}
+
+@include _setup-numbers;
+@include _setup-size;
+@include _setup-display;
+@include _setup-position;
+@include _setup-object;
+@include _setup-placement;
+@include _setup-text;
+@include _setup-font;
+@include _setup-color;
+@include _setup-visibility;
+
+$space-molecules: (x: (left, right), y: (top, bottom));
+
+@mixin _setup-numbers-molecule {
+  $values: map.get($_utilities, numerical);
+
+  @each $prop in $values {
+    @each $space, $ids in $space-molecules {
+      @each $value in $space-values {
+        $_name: #{nth-letters($prop)}#{$space}-#{$value}; //mx-1;
+        $_property: str-concat($prop, $ids); //margin-left, margin-right;
+        $_value: value($value);
+
+        $_moleculeUtilities:
+        set-utility(
+        $_name,
+        $_property,
+        $_value,
+        $_moleculeUtilities
+        ) !global
+      }
+    }
+  }
+}
+
+@include _setup-numbers-molecule;
+
+@mixin _setup-numbers-compound {
+  $values: map.get($_utilities, numerical);
+
+  @each $prop in $values {
+    @each $value in $space-values {
+      $_name: #{nth-letters($prop)}-#{$value};
+      $_property: $prop;
+      $_value: value($value);
+
+      $_compoundUtilities:
+      set-utility(
+      $_name,
+      $_property,
+      $_value,
+      $_compoundUtilities
+      ) !global
+    }
+  }
+}
+
+// b-top-1-solid-black
+// b-5-10-black
+// b-5
+// b-5-5-5-5-solid-black
+
+// @debug str-split('b-5-5-5-5-solid-black', '-');
+
+@mixin border($arg: null) {
+  $args: str-split('b-5-5-5-5-solid-black', '-');
+
+  $type: nth($args, 1); // First element is key identifier.
+  $args: list-remove($args, $type); // Then clean the list.
+
+  $count-of-numbers: 0;
+  @each $arg in $args {
+    @debug type-of(#{$arg});
+    @if (type-of($arg) == 'string') {
+      $count-of-numbers: $count-of-numbers + 1;
+    }
+  }
+
+
+  @debug $count-of-numbers, $args;
+}
+
+@include border;
+
+@include _setup-numbers-compound;
+
+$_utilitiesMap: ($_atomUtilities, $_moleculeUtilities, $_compoundUtilities);
+
+$utilities: ();
+
+@each $map in $_utilitiesMap {
+  $utilities: map.merge($utilities, $map);
+}
+
+@import 'custom-utils';

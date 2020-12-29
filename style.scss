@@ -1,0 +1,285 @@
+@use "sass:list";
+@use "sass:map";
+@use "sass:math";
+@use "sass:string";
+@use "sass:meta";
+@use "sass:selector";
+
+@import 'abstract';
+@import 'variables';
+@import 'setup';
+
+// @import 'normalize';
+
+// base elements
+
+:root {
+  --primary: #{$primary};
+  --black: #{$black};
+  --white: #{$white};
+  --secondary: #{$secondary};
+  --contentWidth: #{$content-width};
+}
+
+html {
+  font-size: clamp($base-font-size - 2, 3.125vw, $base-font-size + 4);
+  font-family: $font-stack;
+  scroll-behavior: smooth;
+  color: get-var('black');
+}
+
+* {
+  box-sizing: border-box;
+  line-height: $line-height;
+}
+
+body {
+  @include apply(flex, relative, m-0);
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+img {
+  @include apply(block, object-contain, object-center, h-auto, 'max-w-100%');
+}
+
+@import 'typography';
+
+// colors
+
+// @import 'grid';
+
+// components
+  // buttons
+
+// @import 'buttons';
+
+  // form fields
+
+  // utils
+
+// @import 'utils';
+
+table {
+  @include apply('w-100%');
+  td {
+    @include apply(py-8, border-t-1, border-primary);
+    border-top-style: solid;
+    &:first-of-type {
+      @include apply('w-75%', text-left);
+    }
+    &:last-of-type {
+      @include apply(text-center, font-700);
+    }
+  }
+  th {
+    @include apply(pb-32, text-secondary, font-400);
+  }
+}
+
+.container {
+  @include apply(m-auto, "w-100%");
+  max-width: get-var(contentWidth);
+}
+
+header {
+  @include apply(
+    relative,
+    // mb-32,
+    py-16,
+    text-uppercase,
+    text-right,
+    (h:to-rem(100px))
+  );
+  box-shadow: 0 4px 4px transparentize($black, .65);
+  z-index: 10;
+  > .container {
+    @include apply(flex, "h-100%", align-items-center, justify-content-space-between);
+  }
+}
+
+header nav, header .menu {
+  @include apply("h-100%");
+}
+
+%menu {
+  @include apply(flex, p-0, m-auto, align-items-center, justify-content-center);
+  list-style: none;
+  @include bind(li, px-4);
+}
+
+header .menu {
+  @extend %menu;
+  @include apply(justify-content-flex-end);
+}
+
+main {
+  @include apply(mt-0, mb-64, mx-auto, px-8, 'w-100%');
+  max-width: get-var(contentWidth);
+}
+
+.hero {
+  @include auto-flex;
+  @include el(title) {
+    @include apply(m-0);
+  }
+  @include el(subtitle) {
+    @include apply(m-0, text-secondary);
+  }
+  @include bind(img, object-contain);
+}
+
+.btn {
+  @include apply(
+    px-56,
+    py-16,
+    my-16,
+    inline-block,
+    text-uppercase,
+    text-white,
+    (rounded: to-rem(100px),
+    w:max-content)
+  );
+  background-image: linear-gradient(90deg, $primary, $secondary);
+  cursor: pointer;
+  @include mod(center) {
+    @include apply(block, text-center, mx-auto, py-8, px-32);
+  }
+}
+
+.text-center {
+  @include apply(text-center);
+}
+
+.card-container {
+  @include auto-flex(3, to-rem(32px));
+}
+
+.card {
+  @include apply((rounded:16px));
+  box-shadow: 0 0 10px transparentize($primary, 0.8);
+  @include el(title) {
+    @include apply(text-secondary, text-center);
+    font-size: to-rem(30px);
+  }
+  @include mod(grid) {
+    &:only-of-type {
+      @include apply(place-self-start);
+    }
+    max-width: calc( #{get-var(contentWidth)} / 3);
+    img {
+      @include apply('w-100%', object-contain);
+    }
+  }
+}
+
+.grid-container {
+  @include auto-grid(3);
+}
+
+.categories-list {
+  @include auto-flex;
+  @include apply(place-content-center, text-center, text-uppercase);
+  > * {
+    flex: unset;
+  }
+}
+
+.article {
+  @include owl-selector {
+    @include apply(mt-128);
+  }
+  @include el(icon) {
+    @include apply(mr-32);
+    float: left;
+  }
+  @include el(title) {
+    @include apply(text-secondary);
+  }
+  p {
+    clear: left;
+  }
+  @include el(categories) {
+    > * {
+      @include apply(inline, text-primary);
+    }
+    a { @include apply(text-uppercase); }
+  }
+}
+
+#about {
+  @include auto-flex(2, 2rem);
+  h2 {
+    flex: 1 0 100%;
+  }
+}
+
+#contact {
+  @include auto-flex(3);
+  @include apply(text-center, text-secondary);
+  h2 {
+    flex: 1 0 100%;
+  }
+}
+
+footer {
+  @include apply(background-black, text-white, mt-auto);
+  .menu {
+    @extend %menu;
+    @include bind(".menu-item a", text-white);
+  }
+  .container {
+    @include apply(py-16);
+  }
+}
+
+.footer-widget {
+  .container {
+    @include apply(mx-auto, p-16, justify-content-space-between);
+    @include auto-flex;
+  }
+  background-image: linear-gradient(#F47D2A, #E56025);
+  div:nth-of-type(2){
+    @include apply(text-right);
+  }
+}
+
+// @supports not (font-size: clamp(1px, 1px, 1px)) {
+//   html {
+//     font-size: $base-font-size;
+//     @include md-breakpoint() {
+//       font-size: calc(#{$base-font-size} + 6 * ((100vw - 320px) / 680));
+//     }
+//     @include lg-breakpoint() {
+//       font-size: $base-font-size + 6;
+//     }
+//   }
+// }
+// @supports not (display: flex) and (gap: 1px) {
+//   .emulated-flex-gap {
+//     --gap: 12px;
+//     display: inline-flex;
+//     flex-wrap: wrap;
+//     margin: calc(-1 * var(--gap)) 0 0 calc(-1 * var(--gap));
+//     width: calc(100% + var(--gap));
+//     > * {
+//       margin: var(--gap) 0 0 var(--gap);
+//     }
+//   }
+// }
+//
+// /* Remove all animations and transitions for people that prefer not to see them */
+// @media (prefers-reduced-motion: reduce) {
+//   *,
+//   *::before,
+//   *::after {
+//     animation-duration: 0.01ms !important;
+//     animation-iteration-count: 1 !important;
+//     transition-duration: 0.01ms !important;
+//     scroll-behavior: auto !important;
+//   }
+//
+//   html {
+//     scroll-behavior: initial;
+//   }
+// }
